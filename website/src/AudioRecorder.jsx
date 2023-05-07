@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import axios from "axios";
 
 const mimeType = "audio/webm";
 
@@ -62,6 +63,16 @@ const AudioRecorder = () => {
 			setAudio(audioUrl);
 
 			setAudioChunks([]);
+
+			const formData = new FormData();
+			formData.append("audio", audioBlob);
+			
+			axios.post("https://cosminc98-fictional-carnival-vrr47vj97xg3pjr6-4242.preview.app.github.dev/predict", formData, {
+				headers: {
+					'Content-Type': 'multipart/form-data',
+					'Access-Control-Allow-Origin': '*'
+				}
+			});
 		};
 	};
 
