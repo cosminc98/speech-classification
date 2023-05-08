@@ -67,7 +67,7 @@ const AudioRecorder = () => {
 			const formData = new FormData();
 			formData.append("audio", audioBlob);
 			
-			axios.post("https://cosminc98-fictional-carnival-vrr47vj97xg3pjr6-4242.preview.app.github.dev/predict", formData, {
+			axios.post(`${import.meta.env.VITE_INFERENCE_API_URL}/predict`, formData, {
 				headers: {
 					'Content-Type': 'multipart/form-data',
 					'Access-Control-Allow-Origin': '*'
