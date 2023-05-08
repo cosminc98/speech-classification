@@ -14,6 +14,8 @@ const AudioRecorder = () => {
 
 	const [audio, setAudio] = useState(null);
 
+	const [prediction, setPrediction] = useState(null);
+
 	const [audioChunks, setAudioChunks] = useState([]);
 
 	const getMicrophonePermission = async () => {
@@ -52,11 +54,11 @@ const AudioRecorder = () => {
 		setAudioChunks(localAudioChunks);
 	};
 
-	const stopRecording = () => {
+	const stopRecording = async () => {
 		setRecordingStatus("inactive");
 		mediaRecorder.current.stop();
 
-		mediaRecorder.current.onstop = () => {
+		mediaRecorder.current.onstop = async () => {
 			const audioBlob = new Blob(audioChunks, { type: mimeType });
 			const audioUrl = URL.createObjectURL(audioBlob);
 
@@ -67,18 +69,19 @@ const AudioRecorder = () => {
 			const formData = new FormData();
 			formData.append("audio", audioBlob);
 			
-			axios.post(`${import.meta.env.VITE_INFERENCE_API_URL}/predict`, formData, {
+			const response = await axios.post(`${import.meta.env.VITE_INFERENCE_API_URL}/predict`, formData, {
 				headers: {
 					'Content-Type': 'multipart/form-data',
 					'Access-Control-Allow-Origin': '*'
 				}
 			});
+
+			setPrediction(response.data.label)
 		};
 	};
 
 	return (
 		<div>
-			<h2>Audio Recorder</h2>
 			<main>
 				<div className="audio-controls">
 					{!permission ? (
@@ -100,10 +103,10 @@ const AudioRecorder = () => {
 				{audio ? (
 					<div className="audio-player">
 						<audio src={audio} controls></audio>
-						<a download href={audio}>
-							Download Recording
-						</a>
 					</div>
+				) : null}
+				{prediction ? (
+					<h1>{prediction}</h1>
 				) : null}
 			</main>
 		</div>

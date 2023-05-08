@@ -5,6 +5,7 @@ import requests
 import tempfile
 import librosa
 import soundfile
+import random
 
 app = Flask(__name__)
 CORS(app)
@@ -22,7 +23,7 @@ def predict_on_audio():
 
     tmp_dirname.cleanup()
 
-    response = jsonify({'some': 'data'})
+    response = jsonify({'label': random.choice(["happy", "sad", "angry"])})
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 

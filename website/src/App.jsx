@@ -13,7 +13,7 @@ const App = () => {
 
 	return (
 		<div>
-			<h1>React Media Recorder</h1>
+			<h1>Speech Emotion Recognition</h1>
 			<div>
 				<AudioRecorder />
 			</div>
