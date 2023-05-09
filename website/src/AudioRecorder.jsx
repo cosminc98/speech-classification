@@ -1,10 +1,30 @@
 import { useState, useRef } from "react";
 import axios from "axios";
+import Dropdown from 'react-dropdown';
+import Grid from '@mui/material/Grid';
+import './DropDown.css';
+import './AudioRecorder.css';
 
 const mimeType = "audio/webm";
 
+const modelOptions = [
+	{ value: 'cnn', label: 'CNN' },
+	{ value: 'svm', label: 'SVM' }
+];
+const defaultModelOption = modelOptions[0];
+
+const taskOptions = [
+	{ value: 'ser', label: 'Emotion Recognition' },
+	{ value: 'yesno', label: 'YES / NO' }
+];
+const defaultTaskOption = taskOptions[0];
+
 const AudioRecorder = () => {
 	const [permission, setPermission] = useState(false);
+
+	const [model, setModel] = useState(defaultModelOption.value);
+
+	const [task, setTask] = useState(defaultTaskOption.value);
 
 	const mediaRecorder = useRef(null);
 
@@ -13,6 +33,8 @@ const AudioRecorder = () => {
 	const [stream, setStream] = useState(null);
 
 	const [audio, setAudio] = useState(null);
+
+	const [audioBlob, setAudioBlob] = useState(null);
 
 	const [prediction, setPrediction] = useState(null);
 
@@ -59,30 +81,79 @@ const AudioRecorder = () => {
 		mediaRecorder.current.stop();
 
 		mediaRecorder.current.onstop = async () => {
-			const audioBlob = new Blob(audioChunks, { type: mimeType });
-			const audioUrl = URL.createObjectURL(audioBlob);
 
+			const audioBlob = new Blob(audioChunks, { type: mimeType });
+			setAudioBlob(audioBlob);
+
+			const audioUrl = URL.createObjectURL(audioBlob);
 			setAudio(audioUrl);
 
 			setAudioChunks([]);
 
-			const formData = new FormData();
-			formData.append("audio", audioBlob);
-			
-			const response = await axios.post(`${import.meta.env.VITE_INFERENCE_API_URL}/predict`, formData, {
+			await runPredict();
+		};
+	};
+
+	const runPredict = async () => {
+		if (audioBlob === null) {
+			return;
+		}
+
+		const configJson = JSON.stringify({"task": task, "model": model});
+		const configBlob = new Blob([configJson], {
+			type: 'application/json'
+		});
+
+		const formData = new FormData();
+		formData.append("audio", audioBlob);
+		formData.append("config", configBlob);
+		
+		
+		const response = await axios.post(
+			`${import.meta.env.VITE_INFERENCE_API_URL}/predict`, 
+			formData, 
+			{
 				headers: {
 					'Content-Type': 'multipart/form-data',
 					'Access-Control-Allow-Origin': '*'
 				}
-			});
+			}
+		);
 
-			setPrediction(response.data.label)
-		};
+		setPrediction(response.data.label)
+	};
+
+	const onModelChange = async (option) => {
+		setModel(option.value);
+		await runPredict();
+	};
+
+	const onTaskChange = async (option) => {
+		setTask(option.value);
+		await runPredict();
 	};
 
 	return (
 		<div>
 			<main>
+				<Grid container spacing={2} columns={54}>
+					<Grid item xs={14}></Grid>
+					<Grid item xs={8}>
+						<h2>Task</h2>
+					</Grid>
+					<Grid item xs={18}>
+	  					<Dropdown options={taskOptions} onChange={onTaskChange} value={defaultTaskOption} placeholder="Select an option" />
+					</Grid>
+					<Grid item xs={14}></Grid>
+					<Grid item xs={14}></Grid>
+					<Grid item xs={8}>
+						<h2>Model</h2>
+					</Grid>
+					<Grid item xs={18}>
+	  					<Dropdown options={modelOptions} onChange={onModelChange} value={defaultModelOption} placeholder="Select an option" />
+					</Grid>
+					<Grid item xs={14}></Grid>
+				</Grid>
 				<div className="audio-controls">
 					{!permission ? (
 						<button onClick={getMicrophonePermission} type="button">
@@ -106,7 +177,14 @@ const AudioRecorder = () => {
 					</div>
 				) : null}
 				{prediction ? (
-					<h1>{prediction}</h1>
+					<Grid container spacing={2} columns={12}>
+						<Grid item xs={8}>
+							<h1>Prediction:</h1>
+						</Grid>
+						<Grid item xs={4}>
+							<h1>{prediction}</h1>
+						</Grid>
+					</Grid>
 				) : null}
 			</main>
 		</div>

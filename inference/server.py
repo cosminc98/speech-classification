@@ -6,6 +6,7 @@ import tempfile
 import librosa
 import soundfile
 import random
+import json
 
 app = Flask(__name__)
 CORS(app)
@@ -16,6 +17,12 @@ def predict_on_audio():
 
     audio_fpath = os.path.join(tmp_dirname.name, "sample.webm")
     request.files['audio'].save(audio_fpath)
+
+    config = json.loads(request.files['config'].read().decode('utf-8'))
+    task = config['task']
+    model = config['model']
+
+    print(f'[INFO] Running prediction for task "{task}" with model "{model}"')
 
     audio, sr = librosa.load(audio_fpath, sr=16000)
     wav_fpath = os.path.join(tmp_dirname.name, "sample.wav")
