@@ -59,6 +59,8 @@ const AudioRecorder = () => {
 
 	const startRecording = async () => {
 		setRecordingStatus("recording");
+		setPrediction(null);
+		
 		const media = new MediaRecorder(stream, { type: mimeType });
 
 		mediaRecorder.current = media;
