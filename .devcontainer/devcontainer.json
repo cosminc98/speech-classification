@@ -11,6 +11,7 @@
 			"installJupyterlab": true,
 			"version": "3.9"
 		},
+		"git-lfs": "latest",
 		"ghcr.io/guiyomh/features/vim:0": {}
 	},
 
