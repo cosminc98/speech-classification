@@ -10,6 +10,7 @@ import json
 from pickle import load
 
 from svm import extract_features
+from cnn import load_cnn_model, predict_cnn
 from utils import AudioFile
 
 
@@ -28,8 +29,15 @@ models = {
             "id_to_label": {
                 0: "no",
                 1: "yes",
-            }
-        }
+            },
+        },
+        "cnn": {
+            "model": load_cnn_model("models/yesno/cnn/model_small.pt", n_classes=2),
+            "id_to_label": {
+                0: "no",
+                1: "yes",
+            },
+        },
     },
     "ser": {
         "svm": {
@@ -40,8 +48,16 @@ models = {
                 0: "angry",
                 1: "happy",
                 2: "sad",
-            }
-        }
+            },
+        },
+        "cnn": {
+            "model": load_cnn_model("models/ser/cnn/model_small.pt", n_classes=3),
+            "id_to_label": {
+                0: "angry",
+                1: "happy",
+                2: "sad",
+            },
+        },
     }
 }
 
@@ -92,7 +108,14 @@ def predict_on_audio():
         prediction_name = id_to_label[prediction_index]
 
     else:
-        pass
+        cnn_model = task_models["cnn"]
+        model = cnn_model["model"]
+        id_to_label = cnn_model["id_to_label"]
+        prediction_name = predict_cnn(
+            audio_fpath=wav_fpath,
+            model=model,
+            id_to_label=id_to_label
+        )
 
     response = jsonify({'label': prediction_name})
 

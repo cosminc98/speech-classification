@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 from typing import Optional
 
+SAMPLE_RATE = 16000
+
+
 @dataclass
 class AudioFile:
     # path to the audio file

@@ -5,10 +5,7 @@ import pandas as pd
 import numpy as np
 import random
 
-from utils import AudioFile
-
-
-SAMPLE_RATE = 16000
+from utils import AudioFile, SAMPLE_RATE
 
 
 def stack_stats(
