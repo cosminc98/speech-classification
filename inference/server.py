@@ -30,6 +30,18 @@ models = {
                 1: "yes",
             }
         }
+    },
+    "ser": {
+        "svm": {
+            "pca": load(open("models/ser/svm/pca.pkl", 'rb')),
+            "scaler": load(open("models/ser/svm/scaler.pkl", 'rb')),
+            "model": load(open("models/ser/svm/model.pkl", 'rb')),
+            "id_to_label": {
+                0: "angry",
+                1: "happy",
+                2: "sad",
+            }
+        }
     }
 }
 
