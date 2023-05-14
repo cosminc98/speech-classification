@@ -8,14 +8,18 @@ import soundfile
 import random
 import json
 from pickle import load
+from dotenv import load_dotenv
 
-from svm import extract_features
+from svm import extract_features, N_MFCC
 from cnn import load_cnn_model, predict_cnn
 from utils import AudioFile
 
-
-N_MFCC = 30
-
+# load environment variables from ".env"
+load_dotenv()
+try: 
+    model_size = os.environ["MODEL_SIZE"]
+except KeyError:
+    model_size = "small"
 
 app = Flask(__name__)
 CORS(app)
@@ -32,7 +36,11 @@ models = {
             },
         },
         "cnn": {
-            "model": load_cnn_model("models/yesno/cnn/model_small.pt", n_classes=2),
+            "model": load_cnn_model(
+                model_fpath=f"models/yesno/cnn/model_{model_size}.pt", 
+                n_classes=2,
+                use_large_model=(model_size=="large"),
+            ),
             "id_to_label": {
                 0: "no",
                 1: "yes",
@@ -51,7 +59,11 @@ models = {
             },
         },
         "cnn": {
-            "model": load_cnn_model("models/ser/cnn/model_small.pt", n_classes=3),
+            "model": load_cnn_model(
+                model_fpath=f"models/ser/cnn/model_{model_size}.pt", 
+                n_classes=3,
+                use_large_model=(model_size=="large"),
+            ),
             "id_to_label": {
                 0: "angry",
                 1: "happy",

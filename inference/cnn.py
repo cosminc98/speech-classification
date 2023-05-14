@@ -16,27 +16,33 @@ from utils import AudioFile, SAMPLE_RATE
 
 
 class Net(nn.Module):   
-    def __init__(self, n_classes: int):
+    def __init__(self, n_classes: int, use_last_maxpool: bool):
         super(Net, self).__init__()
 
-        # input size (201, 161)
+        self.n_classes = n_classes
+        self.use_last_maxpool = use_last_maxpool
 
-        self.cnn_layers = nn.Sequential(
-            # Defining a 2D convolution layer
-            nn.Conv2d(3, 64, kernel_size=5, stride=1, padding=2), # (201, 161)
-            nn.BatchNorm2d(64),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2), # (100, 80)
-            # Defining another 2D convolution layer
-            nn.Conv2d(64, 128, kernel_size=5, stride=1, padding=2), # (100, 80)
-            nn.BatchNorm2d(128),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2), # (50, 40)
-            nn.Dropout2d(p=0.5),
-        )
+        # input size (201, 161)
+        cnn_layers = []
+        cnn_layers.append(nn.Conv2d(3, 64, kernel_size=5, stride=1, padding=2))  # (201, 161)
+        cnn_layers.append(nn.BatchNorm2d(64))
+        cnn_layers.append(nn.ReLU(inplace=True))
+        cnn_layers.append(nn.MaxPool2d(kernel_size=2, stride=2))  # (100, 80)
+        cnn_layers.append(nn.Conv2d(64, 128, kernel_size=5, stride=1, padding=2))  # (100, 80)
+        cnn_layers.append(nn.BatchNorm2d(128))
+        cnn_layers.append(nn.ReLU(inplace=True))
+        if self.use_last_maxpool:
+            cnn_layers.append(nn.MaxPool2d(kernel_size=2, stride=2)) # (50, 40)
+        cnn_layers.append(nn.Dropout2d(p=0.5))
+        self.cnn_layers = nn.Sequential(*cnn_layers)
+
+        if self.use_last_maxpool:
+            fc_size = 128 * 50 * 40
+        else:
+            fc_size = 128 * 100 * 80
 
         self.linear_layers = nn.Sequential(
-            nn.Linear(128 * 50 * 40, 128),
+            nn.Linear(fc_size, 128),
             nn.ReLU(inplace=True),
             nn.Linear(128, n_classes),
         )
@@ -49,8 +55,8 @@ class Net(nn.Module):
         return F.log_softmax(x, dim=1)
     
 
-def load_cnn_model(model_fpath: str, n_classes: int):
-    model = Net(n_classes)
+def load_cnn_model(model_fpath: str, n_classes: int, use_large_model: bool):
+    model = Net(n_classes, use_last_maxpool=(not use_large_model))
     model.load_state_dict(torch.load(model_fpath, map_location=torch.device('cpu')))
     model.eval()
     return model

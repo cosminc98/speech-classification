@@ -7,6 +7,8 @@ import random
 
 from utils import AudioFile, SAMPLE_RATE
 
+N_MFCC = 30
+
 
 def stack_stats(
     features: np.ndarray, 
