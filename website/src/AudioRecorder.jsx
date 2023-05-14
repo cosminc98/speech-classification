@@ -84,21 +84,27 @@ const AudioRecorder = () => {
 
 		mediaRecorder.current.onstop = async () => {
 
-			const audioBlob = new Blob(audioChunks, { type: mimeType });
-			setAudioBlob(audioBlob);
+			const audioBlob_ = new Blob(audioChunks, { type: mimeType });
+			setAudioBlob(audioBlob_);
 
-			const audioUrl = URL.createObjectURL(audioBlob);
+			const audioUrl = URL.createObjectURL(audioBlob_);
 			setAudio(audioUrl);
 
 			setAudioChunks([]);
 
-			await runPredict();
+			await runPredict(audioBlob_, model, task);
 		};
 	};
 
-	const runPredict = async () => {
-		if (audioBlob === null) {
-			return;
+	const runPredict = async (blob, model, task) => {
+
+		setPrediction(null);
+
+		if (blob === null) {
+			if (audioBlob === null) {
+				return;
+			}
+			blob = audioBlob;
 		}
 
 		const configJson = JSON.stringify({"task": task, "model": model});
@@ -107,9 +113,8 @@ const AudioRecorder = () => {
 		});
 
 		const formData = new FormData();
-		formData.append("audio", audioBlob);
+		formData.append("audio", blob);
 		formData.append("config", configBlob);
-		
 		
 		const response = await axios.post(
 			`${import.meta.env.VITE_INFERENCE_API_URL}/predict`, 
@@ -127,12 +132,12 @@ const AudioRecorder = () => {
 
 	const onModelChange = async (option) => {
 		setModel(option.value);
-		await runPredict();
+		await runPredict(audioBlob, option.value, task);
 	};
 
 	const onTaskChange = async (option) => {
 		setTask(option.value);
-		await runPredict();
+		await runPredict(audioBlob, model, option.value);
 	};
 
 	return (
