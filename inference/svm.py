@@ -27,17 +27,15 @@ def stack_stats(
     )
 
 
-def get_mfcc(audio_fpath: str, n_mfcc: int = 30) -> Optional[np.ndarray]:
+def get_mfcc(audio_fpath: str, n_mfcc: int = 30, n_seconds: float = 1.0) -> Optional[np.ndarray]:
     data, _ = librosa.core.load(audio_fpath, sr=SAMPLE_RATE)
 
-    N_SECONDS = 1.0
-
     n_samples = len(data)
-    required_samples = int(SAMPLE_RATE * N_SECONDS)
+    required_samples = int(SAMPLE_RATE * n_seconds)
     if n_samples != required_samples:
         if n_samples < required_samples:
             pad_samples = required_samples - n_samples
-            pad_left = random.randint(0, pad_samples)
+            pad_left = pad_samples // 2
             pad_right = pad_samples - pad_left
             data = np.pad(data, (pad_left, pad_right), "constant", constant_values=(0, 0))
         else:
@@ -73,7 +71,8 @@ def extract_features(
     audio_files: List[AudioFile],
     label_to_id: Optional[Dict[str, int]],
     subset: str, 
-    n_mfcc: int = 30
+    n_mfcc: int = 30,
+    n_seconds: float = 1.0,
 ):
 
     features: List[np.ndarray] = []
@@ -82,7 +81,7 @@ def extract_features(
     audio_files = [af for af in audio_files if af.subset == subset]
 
     for audio_file in audio_files:
-        fts = get_mfcc(audio_file.file_path)
+        fts = get_mfcc(audio_file.file_path, n_seconds=n_seconds)
 
         if fts is None:
             continue

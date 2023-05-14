@@ -101,7 +101,7 @@ def create_spectrogram_images_dataset(
         if n_samples != required_samples:
             if n_samples < required_samples:
                 pad_samples = required_samples - n_samples
-                pad_left = random.randint(0, pad_samples)
+                pad_left = pad_samples // 2
                 pad_right = pad_samples - pad_left
                 waveform = torch.nn.functional.pad(waveform, (pad_left, pad_right))
             else:

@@ -34,6 +34,7 @@ models = {
                 0: "no",
                 1: "yes",
             },
+            "n_seconds": 1.0,
         },
         "cnn": {
             "model": load_cnn_model(
@@ -57,6 +58,7 @@ models = {
                 1: "happy",
                 2: "sad",
             },
+            "n_seconds": 2.0,
         },
         "cnn": {
             "model": load_cnn_model(
@@ -97,6 +99,7 @@ def predict_on_audio():
         scaler = svm_model["scaler"]
         model = svm_model["model"]
         id_to_label = svm_model["id_to_label"]
+        n_seconds = svm_model["n_seconds"]
 
         features_predict, _ = extract_features(
             audio_files=[
@@ -111,6 +114,7 @@ def predict_on_audio():
             label_to_id=None,
             subset="predict",
             n_mfcc=N_MFCC,
+            n_seconds=n_seconds,
         )
 
         features_predict_scaled = scaler.transform(features_predict)
